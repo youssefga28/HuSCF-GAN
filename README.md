@@ -27,7 +27,7 @@ This framework distributes the model across clients and a central server. The sp
 
 To start the training process:
 
-`python train.exe`
+`python train.py`
 
 > **Note:** Run this command from inside the project directory.
 
