@@ -4,23 +4,6 @@ This folder contains all evaluation outputs generated from different training **
 
 ---
 
-## 📂 Directory Structure
-
-Each experiment scenario creates its own subdirectory:
-
-results/
-├── scenario_1_single_domain_IID/
-│ ├── plots/
-│ ├── tables/
-│ └── ...
-├── scenario_2_double_domain_NonIID/
-│ ├── plots/
-│ ├── tables/
-│ └── ...
-└── ...
-
----
-
 ## 📊 Evaluation Outputs
 
 Each scenario folder—while empty now— After training it will include:
