@@ -53,6 +53,47 @@ To start the training process:
 
 > **Note:** Run this command from inside the project directory.
 
+The output of the training—Stroed in `Results/` directory—will look like this:
+
+Below are the generation score plots for each domain for Scenario 6 (Multi-Domain IID):
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./mnist_scores.png" width="250"/><br>
+      <b>MNIST</b>
+    </td>
+    <td align="center">
+      <img src="./fmnist_scores.png" width="250"/><br>
+      <b>Fashion-MNIST</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./kmnist_scores.png" width="250"/><br>
+      <b>KMNIST</b>
+    </td>
+    <td align="center">
+      <img src="./notmnist_scores.png" width="250"/><br>
+      <b>NotMNIST</b>
+    </td>
+  </tr>
+</table>
+
+Below are how Classification Metrics and Latency appear inside the csv file, This example is the results for Scenario 6:
+
+| Dataset    | Accuracy | Precision | Recall | F1 Score | FPR |
+|------------|----------|-----------|--------|----------|-------------|
+| MNIST      | 95.94     | 95.97      | 96.96   | 95.93    | 0.45        |
+| FashionMNIST | 81.94  | 82.26      | 81.94   | 81.98    | 2.01        |
+| KMNIST     | 72.91     | 74.31      | 72.91   | 73.09    | 3.01        |
+| NotMNIST   | 88.3     | 88.54      | 88.28   | 88.32    | 1.3        |
+
+
+| Latency (s) | 
+|------------|
+| 7.68      | 
+
 ---
 # HuSCF-GAN: Federated Generative Learning in Multi-Domain Environments
 
