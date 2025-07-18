@@ -10,7 +10,7 @@ Each scenario folder—while empty now— After training it will include:
 
 ### 📈 `plots/`
 
-This folder contains visualizations of performance metrics over training rounds. These include:
+This folder—while empty now— will contain visualizations of performance metrics over training rounds after training. These include:
 
 | File Name               | Description                                          |
 |-------------------------|------------------------------------------------------|
@@ -26,7 +26,7 @@ These plots reflect the **quality and diversity** of the generated images across
 
 ### 📄 `tables/`
 
-This folder contains structured numerical results:
+This folder—while empty now— will contain structured numerical results after training:
 
 | File Name              | Description                                                              |
 |------------------------|--------------------------------------------------------------------------|
