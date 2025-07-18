@@ -1,6 +1,7 @@
 # HuSCF-GAN: Distributed Conditional GAN with Heterogeneous U-shape Split Clustered Federated Learning
 
 ## 📌 Abstract
+
 Federated Learning has gained increasing attention for its ability to enable multiple nodes to
 collaboratively train machine learning models without sharing their raw data. At the same
 time, Generative AI—particularly Generative Adversarial Networks (GANs)—have achieved
