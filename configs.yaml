@@ -9,16 +9,16 @@
 #     → ALL num_*_clients should be non-zero (none should be zero)
 
 clients:
-  num_digit_clients: 100         #  MNIST
-  num_fashion_clients: 0       #  Fashion-MNIST
-  num_kmnist_clients: 0        #  Kuzushiji-MNIST
-  num_notmnist_clients: 0      #  NotMNIST
+  num_digit_clients: 5         #  MNIST
+  num_fashion_clients: 5       #  Fashion-MNIST
+  num_kmnist_clients: 5       #  Kuzushiji-MNIST
+  num_notmnist_clients: 5      #  NotMNIST
 
 training:
   batch_size: 64               # Batch size for local training
 
 experiment:
-  scenario: 1                  # Set from 1 to 6 based on experiment type
+  scenario: 6                  # Set from 1 to 6 based on experiment type
 
 optimizer:
   learning_rate: 0.0002
@@ -27,5 +27,5 @@ optimizer:
     - 0.999
 
 settings:
-  local_epochs: 5
-  num_rounds: 50
+  local_epochs: 1
+  num_rounds: 2

@@ -6,6 +6,8 @@ import yaml
 import copy
 import torch.optim as optim
 
+
+#the client generator head model, containing the necessary first block, composed of the embedding layer and the first fc layer, and the possibility to add layers (client specific)
 class ClientGen(nn.Module):
     def __init__(self, z_dim=100,num_classes=10):
         super(ClientGen, self).__init__()
@@ -40,6 +42,7 @@ class ClientGen(nn.Module):
             x = layer(x)
         return x
 
+#server generator segment with the middle necessary layer, and the possibility to add sequel or prequal layers
 class ServerGen(nn.Module):
     def __init__(self):
         super(ServerGen, self).__init__()
@@ -90,6 +93,7 @@ class ServerGen(nn.Module):
             i=i+1
         return x
 
+# th client generator tail, with the necessary final block, with the possibility of adding previous layer according to the device the capabilities
 class ClientGen2(nn.Module):
     def __init__(self):
         super(ClientGen2, self).__init__()
@@ -233,6 +237,7 @@ class ClientDisc2(nn.Module):
         return self.sigmoid(x)
 
 
+# the generator discriminator extra layers, which are distributed according to device capabilities to the client and servere
 Generator_extra_layers = [
     # First block: Upsample to 14x14x128
     nn.Sequential(

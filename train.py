@@ -6,6 +6,50 @@ import yaml
 import torch 
 import matplotlib.pyplot as plt
 import torchvision
+import pandas as pd
+
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def save_results(scenario, mnist_scores=None, fmnist_scores=None, kmnist_scores=None, notmnist_scores=None,
+                 latency=None, metrics_dict=None):
+    
+    scenario_dir = f"./Results/Scenario_{scenario}"
+    plots_dir = os.path.join(scenario_dir, "plots")
+    tables_dir = os.path.join(scenario_dir, "tables")
+    os.makedirs(plots_dir, exist_ok=True)
+    os.makedirs(tables_dir, exist_ok=True)
+
+    def plot_scores(scores, title, filename):
+        if scores is not None:
+            plt.figure()
+            plt.plot(range(len(scores)), scores, marker='o')
+            plt.title(title)
+            plt.xlabel("Round")
+            plt.ylabel("Score")
+            plt.grid(True)
+            plt.savefig(os.path.join(plots_dir, filename))
+            plt.close()
+
+    # Plot and save per-round scores
+    if mnist_scores != []:
+        plot_scores(mnist_scores, "MNIST Scores per Round", "mnist_scores.png")
+    if fmnist_scores != []:
+        plot_scores(fmnist_scores, "Fashion MNIST Scores per Round", "fmnist_scores.png")
+    if kmnist_scores != []:
+        plot_scores(kmnist_scores, "KMNIST Scores per Round", "kmnist_scores.png")
+    if notmnist_scores != []:
+        plot_scores(notmnist_scores, "NotMNIST Scores per Round", "notmnist_scores.png")
+
+    # Save final metrics as CSV
+    if metrics_dict:
+        pd.DataFrame(metrics_dict).to_csv(os.path.join(tables_dir, "final_metrics.csv"), index=False)
+
+    # Save latency
+    if latency is not None:
+        pd.DataFrame({"latency (s)": [latency]}).to_csv(os.path.join(tables_dir, "latency.csv"), index=False)
+
 with open("./configs.yaml", "r") as f:
     config = yaml.safe_load(f)
 
@@ -118,7 +162,8 @@ for round in range(num_rounds):
 
     mnist_classifier,fmnist_classifier,kmnist_classifier,notmnist_classifier=get_dataset_classifiers(device)
     federated_averaging(client_GENs1,client_GENs2,client_Disc1,client_Disc2,server_GEN,server_Disc,client_sizes,all_layers_gen,all_layers_disc,smallest_components_clients,labels=labels,clients_scores=kld_scores_dict,global_scores=global_kld_scores_dict,alpha=1)
-    mnist_scores.append(calculate_image_score(mnist_classifier,client_GENs1[0],client_GENs2[0],server_GEN,device,server_gen_indeces,Generator_extra_layers,type='mnist'))
+    if num_digit_clients>0:
+        mnist_scores.append(calculate_image_score(mnist_classifier,client_GENs1[0],client_GENs2[0],server_GEN,device,server_gen_indeces,Generator_extra_layers,type='mnist'))
     if num_fashion_clients>0:
       fmnist_scores.append(calculate_image_score(fmnist_classifier,client_GENs1[num_digit_clients],client_GENs2[num_digit_clients],server_GEN,device,server_gen_indeces,Generator_extra_layers,type='fmnist'))
     if num_kmnist_clients>0:
@@ -179,31 +224,39 @@ for round in range(num_rounds):
             plt.close()
 
 
-if num_digit_clients>0:
-    print('--------------------------------------------')
-    print(f'MNIST Scores per round: {mnist_scores}')
+metrics = []
+
+if num_digit_clients > 0:
     generate_classifier_data(client_GENs1[0],client_GENs2[0],server_GEN,device,server_gen_indeces,Generator_extra_layers,num_samples=30000)
-    get_accuracy(test_loaders['mnist'])
-if num_fashion_clients>0:
-    print('--------------------------------------------')
-    print(f'Fashion MNIST Scores per round: {fmnist_scores}')
+    mnist_metrics = get_accuracy(test_loaders['mnist'])
+    metrics.append({"Dataset": "MNIST", **dict(zip(["Accuracy", "Precision", "Recall", "F1", "FPR"], mnist_metrics))})
+
+if num_fashion_clients > 0:
     generate_classifier_data(client_GENs1[num_digit_clients],client_GENs2[num_digit_clients],server_GEN,device,server_gen_indeces,Generator_extra_layers,num_samples=30000,type='fmnist')
-    get_accuracy(test_loaders['fmnist'],type='fmnist')
-if num_kmnist_clients>0:
-    print('--------------------------------------------')
-    print(f'KMNIST Scores per round: {kmnist_scores}')
+    fmnist_metrics = get_accuracy(test_loaders['fmnist'], type='fmnist')
+    metrics.append({"Dataset": "FashionMNIST", **dict(zip(["Accuracy", "Precision", "Recall", "F1", "FPR"], fmnist_metrics))})
+
+if num_kmnist_clients > 0:
     generate_classifier_data(client_GENs1[num_digit_clients+num_fashion_clients],client_GENs2[num_digit_clients+num_fashion_clients],server_GEN,device,server_gen_indeces,Generator_extra_layers,num_samples=30000,type='kmnist')
-    get_accuracy(test_loaders['kmnist'],type='kmnist')
-if num_notmnist_clients>0:
-    print('--------------------------------------------')
-    print(f'NotMNIST Scores per round: {notmnist_scores}')
+    kmnist_metrics = get_accuracy(test_loaders['kmnist'], type='kmnist')
+    metrics.append({"Dataset": "KMNIST", **dict(zip(["Accuracy", "Precision", "Recall", "F1", "FPR"], kmnist_metrics))})
+
+if num_notmnist_clients > 0:
     generate_classifier_data(client_GENs1[num_digit_clients+num_fashion_clients+num_kmnist_clients],client_GENs2[num_digit_clients+num_fashion_clients+num_kmnist_clients],server_GEN,device,server_gen_indeces,Generator_extra_layers,num_samples=30000,type='notmnist')
-    get_accuracy(test_loaders['notmnist'],type='notmnist')
-print('--------------------------------------------')   
-print(f'The iteration latency for HuSCF-GAN in the simulated environment is {latency} s')
+    notmnist_metrics = get_accuracy(test_loaders['notmnist'], type='notmnist')
+    metrics.append({"Dataset": "NotMNIST", **dict(zip(["Accuracy", "Precision", "Recall", "F1", "FPR"], notmnist_metrics))})
 
 
-
+# Save all results
+save_results(
+    scenario=scenario,
+    mnist_scores=mnist_scores,
+    fmnist_scores=fmnist_scores,
+    kmnist_scores=kmnist_scores,
+    notmnist_scores=notmnist_scores,
+    latency=latency,
+    metrics_dict=metrics
+)
     
 
 

@@ -84,7 +84,7 @@ class NotMNISTClassifier(nn.Module):
         x = self.fc2(x)
         return x
 
-#calculate the Image generation score - similar to inception score 
+#calculate the Image generation score - similar to inception score , but with dataspecific classifier
 def calculate_image_score(mnist_classifier,client_gen1,client_gen2,server_GEN,device,server_gen_indeces,Generator_extra_layers,num_samples=5000,type='mnist'):
 
     with open("./configs.yaml", "r") as f:
@@ -303,15 +303,7 @@ def get_accuracy(test_dataloader,type='mnist'):
         fpr_list.append(fpr)
     fpr_macro = np.mean(fpr_list)
 
-    print(f"HuSCF-GAN_{type}_Accuracy={accuracy:.2f}")
-    print(f"HuSCF-GAN_{type}_Precision={precision:.4f}")
-    print(f"HuSCF-GAN_{type}_Recall={recall:.4f}")
-    print(f"HuSCF-GAN_{type}_F1={f1:.4f}")
-    print(f"HuSCF-GAN_{type}_FPR={fpr_macro:.4f}")
-    print("\nClassification Report:\n")
-    print(classification_report(all_labels, all_preds, digits=4))
-    print("-------------------------------")
-    accuracy_per_label(all_labels, all_preds)
-    return 100 * correct / total
+    # accuracy_per_label(all_labels, all_preds)
+    return accuracy,100*precision,100*recall,100*f1,100*fpr_macro
 
 

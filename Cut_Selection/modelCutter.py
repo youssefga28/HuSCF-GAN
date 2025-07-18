@@ -5,12 +5,16 @@ import torch.optim as optim
 import itertools
 
 
+
+# this has to be the same architecture that we use in the HuSCFGAN, but here the embedding layers are left out 
+# because they don't contribute to any flops, they are simply lookup layers, that's why we don't write them here
+# if you need to try any other architecture, you need to change the architecture here as well
 class Generator(nn.Module):
-    def __init__(self, z_dim=100):
+    def __init__(self, z_dim=100,num_classes=10):
         super(Generator, self).__init__()
         self.fc = nn.Sequential(
             # Fully connected layer to convert z_dim to a 7x7 feature map
-            nn.Linear(z_dim, 256 * 7 * 7),
+            nn.Linear(z_dim+num_classes, 256 * 7 * 7),
             nn.BatchNorm1d(256 * 7 * 7),
             nn.ReLU(True),
             
@@ -47,7 +51,7 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.conv = nn.Sequential(
             # First convolution (from 1x28x28 to 64x14x14)
-            nn.Conv2d(1, 64, 4, 2, 1),  # (Batch, 64, 14, 14)
+            nn.Conv2d(2, 64, 4, 2, 1),  # (Batch, 64, 14, 14)
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, inplace=True),
 
@@ -75,7 +79,8 @@ class Discriminator(nn.Module):
     def forward(self, x):
         return self.conv(x)
 
-    
+
+# Flops calculation according to each layer
 def compute_flops(layer, input_tensor,order):
     """Computes the FLOPs for a given layer."""
     forward_flops = 0
@@ -168,6 +173,7 @@ def compute_flops(layer, input_tensor,order):
                     backward_flops *= output_shape[i]
     return (input_tensor.shape[0]* forward_flops,input_tensor.shape[0]* backward_flops)
 
+
 def calculate_flops(model, input_tensor):
     """Calculates FLOPs for every layer in the model and returns a dictionary with layer names as keys."""
     forward_flops_dict = {}
@@ -181,8 +187,7 @@ def calculate_flops(model, input_tensor):
             for name2,layer2 in layer.named_children():
                 if  isinstance(previous_layer,nn.Linear) and (isinstance(layer2,nn.Conv2d) or isinstance(layer2,nn.ConvTranspose2d)):
                     input_data=input_data.view(input_data.shape[0],layer2.in_channels,int(np.sqrt(input_data.shape[1]/layer2.in_channels)),-1)
-                    # print(input_data.shape)
-                # print(name+"."+name2)
+
                 layer_flops = compute_flops(layer2, input_data,i) 
                 i=i+1
                 forward_flops_dict[name+"."+name2] = layer_flops[0]
@@ -194,7 +199,6 @@ def calculate_flops(model, input_tensor):
         else:
             if  isinstance(previous_layer,nn.Linear) and (isinstance(layer,nn.Conv2d) or isinstance(layer2,nn.ConvTranspose2d)):
                 input_data=input_data.view(input_data.shape[0],layer.in_channels,int(np.sqrt(input_data.shape[1]/layer.in_channels)),-1)
-                print(input_data)
             layer_flops = compute_flops(layer, input_data,i) 
             i=i+1
             forward_flops_dict[name] = layer_flops[0]
@@ -235,12 +239,15 @@ def calculate_output_size(model, input_tensor):
 
     return output_size_dict
 
+#it compute the output size for each layer in bytes
 def compute_output_size(layer, input_tensor):
     product=1
     for i in layer(input_tensor).shape:
         product=product*i
     return int(product * (32/8)) #multiply the number of output by 32 (float requires 32 bits) and divide by 8 to get the nummber of bytes
 
+
+# this function sums every 3 elements in the list, it is used to sum the flops of every main layer with the batch normalization and the activation layer it follows, for simplification
 def replace_with_sum(lst):
         result = []
         i = 0
@@ -251,6 +258,7 @@ def replace_with_sum(lst):
             i += 3
         return result
 
+# This function keeps only in the lest the output of every third layer
 def keep_every_third_element(lst):
     # Start from index 2 and select every third element
     result = lst[2::3]
@@ -265,8 +273,8 @@ def get_flops_and_outputs():
     z_dim=100
     gener=Generator()
     disc=Discriminator()
-    disc_input_tensor = torch.randn(64, 1, 28, 28)  # Batch size of 1, 3 channels, 224x224 image
-    gen_input_tensor=torch.randn(64,z_dim)
+    disc_input_tensor = torch.randn(64, 2, 28, 28)  
+    gen_input_tensor=torch.randn(64,z_dim+10)
     forward_flops_disc,backward_flops_disc = calculate_flops(disc, disc_input_tensor)
     forward_flops_gen,backward_flops_gen = calculate_flops(gener, gen_input_tensor)
 
@@ -274,6 +282,10 @@ def get_flops_and_outputs():
     gen_sizes=calculate_output_size(gener, gen_input_tensor)
 
     disc_sizes=calculate_output_size(disc, disc_input_tensor)
+    
+    #Here we sum the flops of every three layers
+    #In doing so, we are making blocks of every three layers, which are usually a main layer like fc or conv or transposed conv followed by normalization and activation
+    # the reason we do so is for simplification since normalization and activation contributes minimally to the flops, so we combine them with their main layer
     forward_gen_flops = replace_with_sum(list(forward_flops_gen.values()))
 
 
@@ -284,10 +296,16 @@ def get_flops_and_outputs():
     backward_disc_flops = replace_with_sum(list(backward_flops_disc.values()))
 
 
-
+    #we do the same here, as the cuts will be taken between the blocks
     gen_transmit_bytes=keep_every_third_element(list(gen_sizes.values()))
 
     disc_transmit_bytes=keep_every_third_element(list(disc_sizes.values()))
+    
+    #this is specific to our architecture, the output is in the form of [x1,x2,x3,x4]
+    #x1 and x2 are the cutpoints for the generator head and tail, x3 and x4 are for the discriminator
+    # 0 means no extra layer is added except for the necessary first block (in case of head), and last block (in case of tail), 1 mean, another extra block is added
+    # they are only 0s and 1s, because both the generator and discriminator here, are composed of 5 blocks,the first always reside in the head, the last always in the tail, and the middle is always in the server segment
+    # thus only 2 remaining blocks to locae per generator and discriminator, this should change if you made the architecture bigger
     possible_cuts = list(itertools.product([0, 1], repeat=4))
     flops_and_sizes_per_cuts={}
 

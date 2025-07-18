@@ -18,46 +18,54 @@ num_clients = num_digit_clients + num_fashion_clients +num_kmnist_clients + num_
 def fitness(individual,flops_and_sizes_per_cuts,forward_gen_flops,forward_disc_flops,backward_gen_flops,backward_disc_flops,client_specs,computational_frequency_server,server_cpu_cycles_per_flop,server_transmission_rate,alpha=0.5,gamma=0.5):
     computational_frequency_hz_server = computational_frequency_server
     
+    #the variables and array lengths here are specific to our architecture, not dynamic
     
-    max_genhead_forward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the head part at this position
-    forward_gen_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth
-    max_gentail_forward_latency_c=0 #the max time needed for the tail computation either locally or at server
+    max_genhead_forward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the head part at this position, if the architecture is bigger, the array is bigger
+    forward_gen_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth, it should be bigger if the architecture is bigger
+    max_gentail_forward_latency_c=0 #the max time needed for the tail computation 
+
+    max_gentail_backward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the tail part at this position, if the architecture is bigger, the array is bigger
+    backward_gen_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth, it should be bigger if the architecture is bigger
+    max_genhead_backward_latency_c=0 #the max time needed for the head computation 
     
-    max_gentail_backward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the tail part at this position
-    backward_gen_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth
-    max_genhead_backward_latency_c=0 #the max time needed for the head computation either locally or at server
-    
+    #Number of clients participating in the 2nd block layer at the server side, (They dont have it locally, where head cutpoint is before it)
     count_2nd_layer_gen_participants = sum(1 for x in individual if x[0] == 0)
+    #Number of clients participating in the 4th block layer at the server side, (They dont have it locally, where tail cutpoint is after it)
     count_4th_layer_gen_participants = sum(1 for x in individual if x[1] == 0)
     
-    max_dischead_forward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the head part at this position
-    forward_disc_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth
+    max_dischead_forward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the head part at this position, if the architecture is bigger, the array is bigger
+    forward_disc_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth, it should be bigger if the architecture is bigger
     max_disctail_forward_latency_c=0 #the max time needed for the tail computation either locally or at server
     
-    max_disctail_backward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the tail part at this position
-    backward_disc_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth
-    max_dischead_backward_latency_c=0 #the max time needed for the head computation either locally or at server
+    max_disctail_backward_latency_c=[0]*2 #[x1,x2] where x_i is the maximum latency for the clients who has their cut point in the tail part at this position, if the architecture is bigger, the array is bigger
+    backward_disc_latency_s=[0]*3  #[s1,s2,s3] where s1 is the latency for server computation of the second block for all participating clients in it and s2 for third block and s3 for forth, it should be bigger if the architecture is bigger
+    max_dischead_backward_latency_c=0 #the max time needed for the head computation 
     
+    #Number of clients participating in the 2nd block layer at the server side, (They dont have it locally, where head cutpoint is before it)
     count_2nd_layer_disc_participants = sum(1 for x in individual if x[2] == 0)
+    #Number of clients participating in the 4th block layer at the server side, (They dont have it locally, where tail cutpoint is after it)
     count_4th_layer_disc_participants = sum(1 for x in individual if x[3] == 0)
     
-
+    #generator heads latencies per client
     client_gen1_forward_computational_latencies=[0]*num_clients
     client_gen1_backward_computational_latencies=[0]*num_clients
     client_gen1_forward_transmission_latencies=[0]*num_clients
 
-
+    #generator tails latencies per client
     client_gen2_forward_computational_latencies=[0]*num_clients
     client_gen2_backward_computational_latencies=[0]*num_clients
     client_gen2_backward_transmission_latencies=[0]*num_clients
 
+    #discriminator heads latencies per client
     client_disc1_forward_computational_latencies=[0]*num_clients
     client_disc1_backward_computational_latencies=[0]*num_clients
     client_disc1_forward_transmission_latencies=[0]*num_clients
 
+    #discriminator tails latencies per client
     client_disc2_forward_computational_latencies=[0]*num_clients
     client_disc2_backward_computational_latencies=[0]*num_clients
     client_disc2_backward_transmission_latencies=[0]*num_clients
+
 
     server_gen_forward_transmission_latency=0
     server_disc_forward_transmission_latency=0
