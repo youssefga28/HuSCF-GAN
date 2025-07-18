@@ -139,7 +139,7 @@ These are used across various federated learning scenarios (single, double, mult
 
 ## 📂 Outputs
 
-- **Outputs Directory**: Contains all experiment results, including Classification Metrics, Image Generation Scores Plots and Latency.  
+- **Results Directory**: Contains all experiment results, including Classification Metrics, Image Generation Scores Plots and Latency.  
 - **Visualization Directory**: Stores generated images across training rounds for visual analysis.
 
 ---
