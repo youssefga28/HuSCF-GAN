@@ -52,6 +52,9 @@ To start the training process:
 `python train.py`
 
 > **Note:** Run this command from inside the project directory.
+> **Note:** Different runs may yield different but close results.
+
+
 
 The output of the training—Stroed in `Results/` directory—will look like this:
 
@@ -60,21 +63,21 @@ Below are the generation score plots for each domain for Scenario 6 (Multi-Domai
 <table>
   <tr>
     <td align="center">
-      <img src="./mnist_scores.png" width="250"/><br>
+      <img src="./Results/Scenario_6/plots/mnist_scores.png" width="250"/><br>
       <b>MNIST</b>
     </td>
     <td align="center">
-      <img src="./fmnist_scores.png" width="250"/><br>
+      <img src="./Results/Scenario_6/plots/fmnist_scores.png" width="250"/><br>
       <b>Fashion-MNIST</b>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="./kmnist_scores.png" width="250"/><br>
+      <img src="./Results/Scenario_6/plots/kmnist_scores.png" width="250"/><br>
       <b>KMNIST</b>
     </td>
     <td align="center">
-      <img src="./notmnist_scores.png" width="250"/><br>
+      <img src="./Results/Scenario_6/plots/notmnist_scores.png" width="250"/><br>
       <b>NotMNIST</b>
     </td>
   </tr>
