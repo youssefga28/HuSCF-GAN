@@ -217,12 +217,13 @@ def get_best_cuts(flops_and_sizes_per_cuts,forward_gen_flops,forward_disc_flops,
     random.shuffle(client_specs)
 
 
-    scale=4
-    num_clients_red=num_clients//scale
+    # scale=4
+    # num_clients_red=num_clients//scale
     # Problem parameters
     POPULATION_SIZE = 1000
     # NUM_TUPLES = num_clients       # Number of tuples per individual (can be changed)
-    NUM_TUPLES = num_clients_red
+    # NUM_TUPLES = num_clients_red
+    NUM_TUPLES = len(profiles) 
     TUPLE_LENGTH = 4     # Length of each tuple
     GENERATIONS = 1000
     CROSSOVER_RATE = 0.7
@@ -230,46 +231,46 @@ def get_best_cuts(flops_and_sizes_per_cuts,forward_gen_flops,forward_disc_flops,
 
     
 
-    def downsample_preserving_ratio(arr, new_length=num_clients_red):
+    # def downsample_preserving_ratio(arr, new_length=num_clients_red):
         
-        n = len(arr)
-        if new_length >= n:
-            return arr.copy()
+    #     n = len(arr)
+    #     if new_length >= n:
+    #         return arr.copy()
         
-        # Count frequencies of each unique value.
-        freq = Counter(arr)
+    #     # Count frequencies of each unique value.
+    #     freq = Counter(arr)
         
-        # Compute the number of elements for each unique value based on the ratio.
-        # We'll use rounding to get integer counts.
-        new_counts = {val: round((count / n) * new_length) for val, count in freq.items()}
+    #     # Compute the number of elements for each unique value based on the ratio.
+    #     # We'll use rounding to get integer counts.
+    #     new_counts = {val: round((count / n) * new_length) for val, count in freq.items()}
         
-        # Adjust total count if rounding didn't sum exactly to new_length.
-        total = sum(new_counts.values())
-        # If we're short, add one to random keys until total equals new_length.
-        while total < new_length:
-            key = random.choice(list(new_counts.keys()))
-            new_counts[key] += 1
-            total += 1
-        # If we have too many, remove one from random keys with count > 0.
-        while total > new_length:
-            key = random.choice(list(new_counts.keys()))
-            if new_counts[key] > 0:
-                new_counts[key] -= 1
-                total -= 1
+    #     # Adjust total count if rounding didn't sum exactly to new_length.
+    #     total = sum(new_counts.values())
+    #     # If we're short, add one to random keys until total equals new_length.
+    #     while total < new_length:
+    #         key = random.choice(list(new_counts.keys()))
+    #         new_counts[key] += 1
+    #         total += 1
+    #     # If we have too many, remove one from random keys with count > 0.
+    #     while total > new_length:
+    #         key = random.choice(list(new_counts.keys()))
+    #         if new_counts[key] > 0:
+    #             new_counts[key] -= 1
+    #             total -= 1
 
-        # For each unique value, randomly sample the assigned number of items from the original array.
-        result = []
-        for val, count in new_counts.items():
-            # Gather all occurrences of val.
-            val_items = [item for item in arr if item == val]
-            # Sample 'count' items without replacement.
-            if count > 0:
-                sampled = random.sample(val_items, count)
-                result.extend(sampled)
+    #     # For each unique value, randomly sample the assigned number of items from the original array.
+    #     result = []
+    #     for val, count in new_counts.items():
+    #         # Gather all occurrences of val.
+    #         val_items = [item for item in arr if item == val]
+    #         # Sample 'count' items without replacement.
+    #         if count > 0:
+    #             sampled = random.sample(val_items, count)
+    #             result.extend(sampled)
         
-        # Optionally, shuffle to mix the values.
-        random.shuffle(result)
-        return result
+    #     # Optionally, shuffle to mix the values.
+    #     random.shuffle(result)
+    #     return result
 
 
     def flatten_individual(individual):
@@ -290,8 +291,17 @@ def get_best_cuts(flops_and_sizes_per_cuts,forward_gen_flops,forward_disc_flops,
                 for i in range(num_tuples)]
 
 
-    def expand_indvidual(individual):
-        expanded_ind=individual*scale
+    # def expand_indvidual(individual):
+    #     expanded_ind=individual*scale
+    #     return expanded_ind
+
+    def expand_indvidual(individual,specs=client_specs,profiles=profiles):
+        expanded_ind=[0]*len(specs)
+        for i,spec in enumerate(specs):
+            for j,profile in enumerate(profiles):
+                if spec[6]==profile[6]:
+                    expanded_ind[i]=individual[j]
+                    break
         return expanded_ind
 
 
@@ -373,7 +383,7 @@ def get_best_cuts(flops_and_sizes_per_cuts,forward_gen_flops,forward_disc_flops,
         population = [generate_individual() for _ in range(POPULATION_SIZE)]
         best=None
 
-        client_specs=downsample_preserving_ratio(client_specs)*scale
+        # client_specs=downsample_preserving_ratio(client_specs)*scale
         for generation in range(GENERATIONS):
 
             new_population = []
