@@ -299,7 +299,7 @@ def get_best_cuts(flops_and_sizes_per_cuts,forward_gen_flops,forward_disc_flops,
         expanded_ind=[0]*len(specs)
         for i,spec in enumerate(specs):
             for j,profile in enumerate(profiles):
-                if spec[6]==profile[6]:
+                if spec==profile:
                     expanded_ind[i]=individual[j]
                     break
         return expanded_ind
