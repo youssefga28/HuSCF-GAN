@@ -199,17 +199,44 @@ These are used across various federated learning scenarios (single, double, mult
 > - Carefully follow the **code comments** provided throughout the codefiles.
 > - The Model architecture should be changed (if needed) in the `models.py` file as well as the `Cut_Selection/modelCutter.py`, as well as the associated variables in both `Cut_Selection/modelCutter.py` and `Cut_Selection/CutLayerSelection.py` according to the comments. 
 
+## 🌐 Paper Website
+
+The official paper website for **“A Distributed Generative AI Approach for Heterogeneous Multi-Domain Environments under Data Sharing Constraints”** is available at:
+
+🔗 https://distributed-gen-ai.github.io/huscf-gan.github.io/
+
+The website contains:
+- An overview of the proposed method and problem setting  
+- Figures and qualitative results from the paper  
+- Supplementary explanations and resources  
+- Links to the arXiv preprint and the Transactions on Machine Learning Research (TMLR) version
+
+
 ## 📚 Citation
 
 If you use HuSCF-GAN in your research or build upon it, please cite:
 
 ```bibtex
-@misc{tawfilis2025distributedgenerativeaiapproach,
-      title={A Distributed Generative AI Approach for Heterogeneous Multi-Domain Environments under Data Sharing constraints}, 
-      author={Youssef Tawfilis and Hossam Amer and Minar El-Aasser and Tallal Elshabrawy},
-      year={2025},
-      eprint={2507.12979},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2507.12979}, 
+
+@article{
+tawfilis2026a,
+title={A Distributed Generative {AI} Approach for Heterogeneous Multi-Domain Environments under Data Sharing constraints},
+author={Youssef Tawfilis and Hossam Amer and Minar El-Aasser and Tallal Elshabrawy},
+journal={Transactions on Machine Learning Research},
+issn={2835-8856},
+year={2026},
+url={https://openreview.net/forum?id=rpbL7pfPYH},
+note={}
 }
+
+@misc{tawfilis2025distributedgenerativeaiapproach,
+  title        = {A Distributed Generative {AI} Approach for Heterogeneous Multi-Domain Environments under Data Sharing Constraints},
+  author       = {Tawfilis, Youssef and Amer, Hossam and El-Aasser, Minar and Elshabrawy, Tallal},
+  year         = {2025},
+  eprint       = {2507.12979},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.LG},
+  url          = {https://arxiv.org/abs/2507.12979},
+  note         = {Accepted and published in Transactions on Machine Learning Research (TMLR), 2026.}
+}
+
