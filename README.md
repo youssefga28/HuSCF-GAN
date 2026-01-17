@@ -218,8 +218,7 @@ If you use HuSCF-GAN in your research or build upon it, please cite:
 
 ```bibtex
 
-@article{
-tawfilis2026a,
+@article{tawfilis2026a,
 title={A Distributed Generative {AI} Approach for Heterogeneous Multi-Domain Environments under Data Sharing constraints},
 author={Youssef Tawfilis and Hossam Amer and Minar El-Aasser and Tallal Elshabrawy},
 journal={Transactions on Machine Learning Research},
